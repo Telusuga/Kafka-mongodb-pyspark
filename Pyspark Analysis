@@ -1,0 +1,475 @@
+Collect your data as a pyspark dataframe and perform different operations.
+Note: Consider only three files for creating a dataframe among all case, region and TimeProvince
+a. Read the data, show it and Count the number of records.
+SparkSession available as 'spark'.
+>>> import pymongo
+>>> client=pymongo.MongoClient('mongodb+srv://surya:kAa82TKkIWzx2Qrv@cluster0.2qpyi1v.mongodb.net/?retryWrites=true&w=majority')
+>>> Database='Kafka'
+>>> c1='final_case'
+>>> c2='final_region'
+>>> c3='final_timeprovince'
+>>> db=client[Database]
+>>> col_1=db[c1]
+>>> col_2=db[c2]
+>>> col_3=db[c3]
+
+>>> data_1=list(col_1.find())
+>>> data_2=list(col_2.find())
+>>> data_3=list(col_3.find())
+>>> from pyspark.sql.types import StructType,StructField, StringType, IntegerType,BooleanType
+>>> 
+
+>>> case_schema = StructType([ \
+...         StructField("case_id",StringType(),True), \
+...         StructField("province",StringType(),True), \
+...         StructField("city", StringType(), True), \
+...         StructField("group", BooleanType(), True), \
+...     StructField("infection_case", StringType(), True), \
+...     StructField("confirmed", IntegerType(), True), \
+...     StructField("latitude", StringType(), True), \
+...     StructField("longitude", StringType(), True)])
+>>>
+>>> case_df=spark.createDataFrame(data_1,schema=case_schema)
+>>> case_df.printSchema()
+root
+ |-- case_id: integer (nullable = true)
+ |-- province: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- group: boolean (nullable = true)
+ |-- infection_case: string (nullable = true)
+ |-- confirmed: integer (nullable = true)
+ |-- latitude: string (nullable = true)
+ |-- longitude: string (nullable = true)
+
+>>> case_df.limit(5).show()
++-------+--------+---------------+-----+--------------------+---------+---------+----------+
+|case_id|province|           city|group|      infection_case|confirmed| latitude| longitude|
++-------+--------+---------------+-----+--------------------+---------+---------+----------+
+|   null|   Seoul|      Jongno-gu| true|Korea Campus Crus...|        7|37.594782|126.968022|
+|   null|   Seoul|     Gangnam-gu| true|Gangnam Yeoksam-d...|        6|        -|         -|
+|   null|   Seoul|from other city| true|Daejeon door-to-d...|        1|        -|         -|
+|   null|   Seoul|Yeongdeungpo-gu| true|Yeongdeungpo Lear...|        3|37.520846|126.931278|
+|   null|   Busan|    Haeundae-gu| true|Haeundae-gu Catho...|        6| 35.20599|  129.1256|
++-------+--------+---------------+-----+--------------------+---------+---------+----------+
+
+>>> 
+
+>>> region_schema = StructType([ \
+...         StructField("code",IntegerType(),True), \
+...         StructField("province",StringType(),True), \
+...         StructField("city", StringType(), True), \
+...         StructField("latitude", DoubleType(), True), \
+...     StructField("longitude", DoubleType(), True), \
+...     StructField("elementary_school_count", IntegerType(), True), \
+...     StructField("kindergarten_count", IntegerType(), True), \
+...     StructField("university_count", StringType(), True), \
+...     StructField("academy_ratio", DoubleType(), True), \
+...     StructField("elderly_population_ratio", DoubleType(), True), \
+...     StructField("elderly_alone_ratio", DoubleType(), True), \
+...     StructField("nursing_home_count", IntegerType(), True)])
+>>> 
+>>> 
+>>> 
+>>> region_df=spark.createDataFrame(data_2,schema=region_schema)
+>>> region_df.limit(5).show()
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+| code|province|        city| latitude| longitude|elementary_school_count|kindergarten_count|university_count|academy_ratio|elderly_population_ratio|elderly_alone_ratio|nursing_home_count|
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+|10020|   Seoul| Gangdong-gu|37.530492|127.123837|                     27|                32|               0|         1.54|                   14.55|                5.4|              1023|
+|10080|   Seoul|Geumcheon-gu|37.456852|126.895229|                     18|                19|               0|         0.96|                   16.15|                6.7|               475|
+|11030|   Busan|  Gijang-gun|35.244881|129.222253|                     21|                35|               0|         1.31|                   15.45|                7.4|               229|
+|11040|   Busan|      Nam-gu|35.136789| 129.08414|                     21|                27|               4|         1.24|                   19.13|                7.9|               475|
+|11060|   Busan|  Dongnae-gu| 35.20506|129.083673|                     22|                31|               0|         1.98|                   17.53|                7.7|               608|
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+
+>>> 
+
+
+
+>>> province_schema = StructType([ \
+...         StructField("date",StringType(),True), \
+...         StructField("time",StringType(),True), \
+...         StructField("province", StringType(), True), \
+...         StructField("confirmed", IntegerType(), True), \
+...     StructField("released", IntegerType(), True), \
+...     StructField("deceased", IntegerType(), True)])
+>>> province_df=spark.createDataFrame(data_3, schema=province_schema)
+>>> province_df.limit(5).show()
++----------+----+-----------------+---------+--------+--------+
+|      date|time|         province|confirmed|released|deceased|
++----------+----+-----------------+---------+--------+--------+
+|2020-01-20|  16| Gyeongsangbuk-do|        0|       0|       0|
+|2020-01-21|  16|            Seoul|        0|       0|       0|
+|2020-01-21|  16|          Daejeon|        0|       0|       0|
+|2020-01-21|  16|      Gyeonggi-do|        0|       0|       0|
+|2020-01-21|  16|Chungcheongnam-do|        0|       0|       0|
++----------+----+-----------------+---------+--------+--------+
+
+>>> 
+
+
+>>> case_df.count()
+174
+>>> region_df.count()
+488
+>>> province_df.count()
+1663
+>>> 
+
+b. Describe the data with a describe function.
+
+>> case_1=case_df.describe()
+>>> region_1=region_df.describe()
+>>> province_1=province_df.describe()
+>>> case_1.show()
++-------+-------+--------+---------------+--------------------+-----------------+------------------+------------------+
+|summary|case_id|province|           city|      infection_case|        confirmed|          latitude|         longitude|
++-------+-------+--------+---------------+--------------------+-----------------+------------------+------------------+
+|  count|      0|     174|            174|                 174|              174|               174|               174|
+|   mean|   null|    null|           null|                null|65.48850574712644| 36.69405111076924|127.58488500461539|
+| stddev|   null|    null|           null|                null|355.0976538893974|0.9114662922487289|0.8230868078005438|
+|    min|   null|   Busan|              -|Anyang Gunpo Past...|                0|                 -|                 -|
+|    max|   null|   Ulsan|from other city|     overseas inflow|             4511|         37.758635|          129.1256|
++-------+-------+--------+---------------+--------------------+-----------------+------------------+------------------+
+
+>>> region_1.show()
++-------+-----------------+--------+----------+------------------+------------------+-----------------------+------------------+------------------+------------------+------------------------+-------------------+------------------+
+|summary|             code|province|      city|          latitude|         longitude|elementary_school_count|kindergarten_count|  university_count|     academy_ratio|elderly_population_ratio|elderly_alone_ratio|nursing_home_count|
++-------+-----------------+--------+----------+------------------+------------------+-----------------------+------------------+------------------+------------------+------------------------+-------------------+------------------+
+|  count|              488|     488|       488|               488|               488|                    488|               488|               488|               488|                     488|                488|               488|
+|   mean|32912.09016393442|    null|      null|36.396995811475406|127.66140068442624|      74.18032786885246|107.90163934426229| 4.151639344262295|1.2947540983606558|       20.92372950819673| 10.644672131147543|1159.2581967213114|
+| stddev|19353.44901149984|    null|      null| 1.059215272388974|0.9038518560199614|      402.2998057910576| 588.1835038895773|22.489914631690073|0.5922888649742549|        8.07912032592982|  5.599128369306902| 6377.627111701345|
+|    min|            10000|   Busan| Andong-si|         33.488936|        126.263554|                      4|                 4|                 0|              0.19|                    7.69|                3.3|                11|
+|    max|            80000|   Ulsan|Yuseong-gu|         38.380571|        130.905883|                   6087|              8837|                 8|              4.18|                   40.26|               24.7|             94865|
++-------+-----------------+--------+----------+------------------+------------------+-----------------------+------------------+------------------+------------------+------------------------+-------------------+------------------+
+
+>>> province_1.show()
++-------+----------+------------------+--------+------------------+------------------+-----------------+
+|summary|      date|              time|province|         confirmed|          released|         deceased|
++-------+----------+------------------+--------+------------------+------------------+-----------------+
+|  count|      1663|              1663|    1663|              1663|              1663|             1663|
+|   mean|      null| 4.781719783523752|    null| 436.3902585688515|303.16055321707756| 8.85027059530968|
+| stddev|      null|7.3263188863466695|    null|1352.0827513059896|1098.3293609650145|31.79467178093177|
+|    min|2020-01-20|                 0|   Busan|                 0|                 0|                0|
+|    max|2020-06-30|                16|   Ulsan|              6906|              6700|              189|
++-------+----------+------------------+--------+------------------+------------------+-----------------+
+
+>>> 
+
+c. If there is any duplicate value drop it.
+>>> case_df.dropDuplicates().count()
+174
+>>> region_df.dropDuplicates().count()
+244
+>>> province_df.dropDuplicates().count()
+1663
+>>> 
+
+d. Use limit function for showcasing a limited number of records.
+
+>>> case_df.limit(10).show()
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+|case_id|   province|           city|group|      infection_case|confirmed|  latitude|  longitude|
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+|   null|      Seoul|      Jongno-gu| true|Korea Campus Crus...|        7| 37.594782| 126.968022|
+|   null|      Seoul|     Gangnam-gu| true|Gangnam Yeoksam-d...|        6|         -|          -|
+|   null|      Seoul|from other city| true|Daejeon door-to-d...|        1|         -|          -|
+|   null|      Seoul|Yeongdeungpo-gu| true|Yeongdeungpo Lear...|        3| 37.520846| 126.931278|
+|   null|      Busan|    Haeundae-gu| true|Haeundae-gu Catho...|        6|  35.20599|   129.1256|
+|   null|      Daegu|   Dalseong-gun| true|Second Mi-Ju Hosp...|      196| 35.857375| 128.466651|
+|   null|      Daegu|from other city| true|       Itaewon Clubs|        2|         -|          -|
+|   null|    Daejeon|         Seo-gu| true|         Orange Town|        7|36.3398739|127.3819744|
+|   null|Gyeonggi-do|              -| true|SMR Newly Planted...|       25|         -|          -|
+|   null|Gyeonggi-do|      Anyang-si| true|Anyang Gunpo Past...|       22| 37.381784|  126.93615|
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+
+>>> region_df.limit(10).show(truncate=False)
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+|code |province|city        |latitude |longitude |elementary_school_count|kindergarten_count|university_count|academy_ratio|elderly_population_ratio|elderly_alone_ratio|nursing_home_count|
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+|10020|Seoul   |Gangdong-gu |37.530492|127.123837|27                     |32                |0               |1.54         |14.55                   |5.4                |1023              |
+|10080|Seoul   |Geumcheon-gu|37.456852|126.895229|18                     |19                |0               |0.96         |16.15                   |6.7                |475               |
+|11030|Busan   |Gijang-gun  |35.244881|129.222253|21                     |35                |0               |1.31         |15.45                   |7.4                |229               |
+|11040|Busan   |Nam-gu      |35.136789|129.08414 |21                     |27                |4               |1.24         |19.13                   |7.9                |475               |
+|11060|Busan   |Dongnae-gu  |35.20506 |129.083673|22                     |31                |0               |1.98         |17.53                   |7.7                |608               |
+|11130|Busan   |Yeonje-gu   |35.176406|129.079566|16                     |18                |2               |1.39         |18.27                   |7.8                |450               |
+|12040|Daegu   |Dong-gu     |35.886836|128.635537|32                     |58                |0               |1.15         |18.81                   |9.0                |649               |
+|12060|Daegu   |Seo-gu      |35.871993|128.559182|17                     |23                |0               |0.83         |21.29                   |10.1               |374               |
+|13020|Gwangju |Nam-gu      |35.132982|126.902379|23                     |44                |4               |2.63         |16.76                   |7.5                |427               |
+|13040|Gwangju |Buk-gu      |35.174434|126.912061|46                     |105               |6               |2.13         |14.35                   |6.9                |782               |
++-----+--------+------------+---------+----------+-----------------------+------------------+----------------+-------------+------------------------+-------------------+------------------+
+
+>>> province_df.limit(10).show()
++----------+----+-----------------+---------+--------+--------+
+|      date|time|         province|confirmed|released|deceased|
++----------+----+-----------------+---------+--------+--------+
+|2020-01-20|  16| Gyeongsangbuk-do|        0|       0|       0|
+|2020-01-21|  16|            Seoul|        0|       0|       0|
+|2020-01-21|  16|          Daejeon|        0|       0|       0|
+|2020-01-21|  16|      Gyeonggi-do|        0|       0|       0|
+|2020-01-21|  16|Chungcheongnam-do|        0|       0|       0|
+|2020-01-21|  16|     Jeollabuk-do|        0|       0|       0|
+|2020-01-22|  16|      Gyeonggi-do|        0|       0|       0|
+|2020-01-22|  16|Chungcheongnam-do|        0|       0|       0|
+|2020-01-22|  16| Gyeongsangnam-do|        0|       0|       0|
+|2020-01-23|  16|            Daegu|        0|       0|       0|
++----------+----+-----------------+---------+--------+--------+
+
+
+
+e. If you find the column name is not suitable, change the column name.[optional]
+f. Select the subset of the columns.
+
+>>> case_df.select('city','infection_case').limit(10).show(truncate=False)
++---------------+--------------------------------+
+|city           |infection_case                  |
++---------------+--------------------------------+
+|Jongno-gu      |Korea Campus Crusade of Christ  |
+|Gangnam-gu     |Gangnam Yeoksam-dong gathering  |
+|from other city|Daejeon door-to-door sales      |
+|Yeongdeungpo-gu|Yeongdeungpo Learning Institute |
+|Haeundae-gu    |Haeundae-gu Catholic Church     |
+|Dalseong-gun   |Second Mi-Ju Hospital           |
+|from other city|Itaewon Clubs                   |
+|Seo-gu         |Orange Town                     |
+|-              |SMR Newly Planted Churches Group|
+|Anyang-si      |Anyang Gunpo Pastors Group      |
++---------------+--------------------------------+
+
+g. If there is any null value, fill it with any random value or drop it.
+
+>>> case_df.dropna().count()
+0
+>>>
+
+>> region_df.dropna().count()
+488
+>>> 
+>>> 
+>>> province_df.dropna().count()
+1663
+>>> 
+
+h. Filter the data based on different columns or variables and do the best analysis.
+
+>>> case_df.filter((col('city')=='Dalseong-gun') & (col('confirmed')>10)).show()
++-------+--------+------------+-----+--------------------+---------+---------+----------+
+|case_id|province|        city|group|      infection_case|confirmed| latitude| longitude|
++-------+--------+------------+-----+--------------------+---------+---------+----------+
+|   null|   Daegu|Dalseong-gun| true|Second Mi-Ju Hosp...|      196|35.857375|128.466651|
+|   null|   Daegu|Dalseong-gun| true|Daesil Convalesce...|      101|35.857393|128.466653|
++-------+--------+------------+-----+--------------------+---------+---------+----------+
+
+>>> 
+
+
+For example: We can filter a data frame using multiple conditions using AND(&), OR(|) and NOT(~) conditions. 
+For example, we may want to find out all the different infection_case in Daegu Province with more than 10 confirmed cases.
+i. Sort the number of confirmed cases. Confirmed column is there in the dataset. Check with descending sort also.
+
+>> case_df.orderBy(desc('confirmed')).show()
++-------+-----------------+---------------+-----+--------------------+---------+---------+----------+
+|case_id|         province|           city|group|      infection_case|confirmed| latitude| longitude|
++-------+-----------------+---------------+-----+--------------------+---------+---------+----------+
+|   null|            Daegu|         Nam-gu| true|  Shincheonji Church|     4511| 35.84008|  128.5667|
+|   null|            Daegu|              -|false|contact with patient|      917|        -|         -|
+|   null|            Daegu|              -|false|                 etc|      747|        -|         -|
+|   null| Gyeongsangbuk-do|from other city| true|  Shincheonji Church|      566|        -|         -|
+|   null|      Gyeonggi-do|              -|false|     overseas inflow|      305|        -|         -|
+|   null|            Seoul|              -|false|     overseas inflow|      298|        -|         -|
+|   null|            Daegu|   Dalseong-gun| true|Second Mi-Ju Hosp...|      196|35.857375|128.466651|
+|   null| Gyeongsangbuk-do|              -|false|contact with patient|      190|        -|         -|
+|   null|            Seoul|              -|false|contact with patient|      162|        -|         -|
+|   null|            Seoul|     Yongsan-gu| true|       Itaewon Clubs|      139|37.538621|126.992652|
+|   null| Gyeongsangbuk-do|              -|false|                 etc|      133|        -|         -|
+|   null|            Daegu|         Seo-gu| true|Hansarang Convale...|      124|35.885592|128.556649|
+|   null|            Seoul|      Gwanak-gu| true|             Richway|      119| 37.48208|126.901384|
+|   null| Gyeongsangbuk-do|   Cheongdo-gun| true|Cheongdo Daenam H...|      119| 35.64887|  128.7368|
+|   null|Chungcheongnam-do|     Cheonan-si| true|gym facility in C...|      103| 36.81503|  127.1139|
+|   null|            Daegu|   Dalseong-gun| true|Daesil Convalesce...|      101|35.857393|128.466653|
+|   null|            Seoul|              -|false|                 etc|      100|        -|         -|
+|   null|            Seoul|        Guro-gu| true| Guro-gu Call Center|       95|37.508163|126.884387|
+|   null|      Gyeonggi-do|              -|false|                 etc|       84|        -|         -|
+|   null|          Incheon|              -|false|     overseas inflow|       68|        -|         -|
++-------+-----------------+---------------+-----+--------------------+---------+---------+----------+
+only showing top 20 rows
+
+>>> 
+
+j. In case of any wrong data type, cast that data type from integer to string or string to integer.
+
+>>> changed_df=case_df.withColumn('confirmed',col('confirmed').cast('String'))
+
+>>> changed_df.printSchema()
+root
+ |-- case_id: integer (nullable = true)
+ |-- province: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- group: boolean (nullable = true)
+ |-- infection_case: string (nullable = true)
+ |-- confirmed: string (nullable = true)
+ |-- latitude: string (nullable = true)
+ |-- longitude: string (nullable = true)
+
+>>> 
+k. Use group by on top of province and city column and agg it with sum of confirmed cases. For example
+df.groupBy(["province","city"]).agg(function.sum("confirmed")
+
+>> case_df.groupBy('city').agg(max('confirmed'),min('confirmed'),sum('confirmed')).show()
++---------------+--------------+--------------+--------------+
+|           city|max(confirmed)|min(confirmed)|sum(confirmed)|
++---------------+--------------+--------------+--------------+
+|     Gangnam-gu|             7|             1|            18|
+|      Jongno-gu|            10|             7|            17|
+|from other city|           566|             1|          1217|
+|Yeongdeungpo-gu|             3|             3|             3|
+|    Haeundae-gu|             6|             6|             6|
+|   Dalseong-gun|           196|           101|           297|
+|         Seo-gu|           124|             3|           151|
+|      Anyang-si|            22|            17|            39|
+|              -|           917|             0|          3625|
+|       Suwon-si|            15|            10|            25|
+|    Seongnam-si|            67|             5|            94|
+|    Bonghwa-gun|            68|            68|            68|
+|     Yangsan-si|             3|             3|             3|
+|       Jinju-si|             9|             9|             9|
+|        Jung-gu|            13|             3|            23|
+|   Eunpyeong-gu|            14|            14|            14|
+|   Yangcheon-gu|            43|             3|            46|
+|   Geumcheon-gu|             6|             6|             6|
+|        Guro-gu|            95|             3|           139|
+|         Jin-gu|             4|             4|             4|
++---------------+--------------+--------------+--------------+
+only showing top 20 rows
+
+>>> 
+l. For joins we will need one more file.you can use region file.
+User different different join methods.for example
+cases.join(regions, ['province','city'],how='left')
+You can do your best analysis.
+
+>>> case_df.join(region_df,case_df.city==region_df.city,'inner').select(case_df.province,region_df.city,case_df.confirmed).show()
++----------------+------------+---------+
+|        province|        city|confirmed|
++----------------+------------+---------+
+|           Daegu|     Dong-gu|       39|
+|         Gwangju|     Dong-gu|        5|
+|           Busan|  Dongnae-gu|       39|
+|           Daegu|      Nam-gu|     4511|
+|           Seoul|Geumcheon-gu|        6|
+|           Daegu|      Nam-gu|     4511|
+|           Daegu|      Seo-gu|      124|
+|         Daejeon|      Seo-gu|        3|
+|         Daejeon|      Seo-gu|        4|
+|         Daejeon|      Seo-gu|       13|
+|         Daejeon|      Seo-gu|        7|
+|           Daegu|      Seo-gu|      124|
+|         Daejeon|      Seo-gu|        3|
+|         Daejeon|      Seo-gu|        4|
+|         Daejeon|      Seo-gu|       13|
+|         Daejeon|      Seo-gu|        7|
+|           Daegu|     Dong-gu|       39|
+|         Gwangju|     Dong-gu|        5|
+|Gyeongsangbuk-do| Bonghwa-gun|       68|
+|Gyeongsangbuk-do|Cheongdo-gun|      119|
++----------------+------------+---------+
+only showing top 20 rows
+
+>>> 
+
+5. If you want, you can also use SQL with data frames. Let us try to run some SQL on the cases table.
+For example:
+cases.registerTempTable('cases_table')
+newDF = sqlContext.sql('select * from cases_table where confirmed>100') 
+newDF.show()
+
+>>> case_df.createOrReplaceTempView('case')
+
+
+>>> spark.sql('select * from case limit 10')
+DataFrame[case_id: string, province: string, city: string, group: boolean, infection_case: string, confirmed: int, latitude: string, longitude: string]
+>>> spark.sql('select * from case limit 10').show()
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+|case_id|   province|           city|group|      infection_case|confirmed|  latitude|  longitude|
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+|   null|      Seoul|      Jongno-gu| true|Korea Campus Crus...|        7| 37.594782| 126.968022|
+|   null|      Seoul|     Gangnam-gu| true|Gangnam Yeoksam-d...|        6|         -|          -|
+|   null|      Seoul|from other city| true|Daejeon door-to-d...|        1|         -|          -|
+|   null|      Seoul|Yeongdeungpo-gu| true|Yeongdeungpo Lear...|        3| 37.520846| 126.931278|
+|   null|      Busan|    Haeundae-gu| true|Haeundae-gu Catho...|        6|  35.20599|   129.1256|
+|   null|      Daegu|   Dalseong-gun| true|Second Mi-Ju Hosp...|      196| 35.857375| 128.466651|
+|   null|      Daegu|from other city| true|       Itaewon Clubs|        2|         -|          -|
+|   null|    Daejeon|         Seo-gu| true|         Orange Town|        7|36.3398739|127.3819744|
+|   null|Gyeonggi-do|              -| true|SMR Newly Planted...|       25|         -|          -|
+|   null|Gyeonggi-do|      Anyang-si| true|Anyang Gunpo Past...|       22| 37.381784|  126.93615|
++-------+-----------+---------------+-----+--------------------+---------+----------+-----------+
+
+
+
+
+>> spark.sql('select province,city,count(confirmed) from case group by 1,2 order by 1').show()
++-----------------+---------------+----------------+                            
+|         province|           city|count(confirmed)|
++-----------------+---------------+----------------+
+|            Busan|     Suyeong-gu|               1|
+|            Busan|              -|               3|
+|            Busan|         Jin-gu|               1|
+|            Busan|from other city|               3|
+|            Busan|    Haeundae-gu|               1|
+|            Busan|     Dongnae-gu|               1|
+|Chungcheongbuk-do|     Goesan-gun|               1|
+|Chungcheongbuk-do|from other city|               3|
+|Chungcheongbuk-do|              -|               3|
+|Chungcheongnam-do|      Seosan-si|               1|
+|Chungcheongnam-do|from other city|               3|
+|Chungcheongnam-do|              -|               3|
+|Chungcheongnam-do|     Cheonan-si|               1|
+|            Daegu|from other city|               2|
+|            Daegu|         Seo-gu|               1|
+|            Daegu|   Dalseong-gun|               2|
+|            Daegu|              -|               3|
+|            Daegu|         Nam-gu|               1|
+|            Daegu|        Dong-gu|               1|
+|          Daejeon|         Seo-gu|               4|
++-----------------+---------------+----------------+
+only showing top 20 rows
+
+
+Here is a example how you can use df for sql now you can perform
+various operations with GROUP BY, HAVING, AND ORDER BY
+
+6. Create Spark UDFs
+Create function casehighlow() If case is less than 50 return low else return high convert into a UDF Function and mention the return type of function.
+Note: You can create as many as udf based on analysis.
+
+>>> def casehighlow(confirmed):
+...     return when(confirmed>50, 'high').otherwise('low')
+... 
+>>> case_1.withColumn('case_status',casehighlow(col('confirmed')))
+DataFrame[case_id: string, province: string, city: string, group: boolean, infection_case: string, confirmed: string, latitude: string, longitude: string, case_status: string]
+>>> case_1.withColumn('case_status',casehighlow(col('confirmed'))).show()
++-------+-----------------+---------------+-----+--------------------+---------+----------+-----------+-----------+
+|case_id|         province|           city|group|      infection_case|confirmed|  latitude|  longitude|case_status|
++-------+-----------------+---------------+-----+--------------------+---------+----------+-----------+-----------+
+|   null|            Seoul|      Jongno-gu| true|Korea Campus Crus...|        7| 37.594782| 126.968022|        low|
+|   null|            Seoul|     Gangnam-gu| true|Gangnam Yeoksam-d...|        6|         -|          -|        low|
+|   null|            Seoul|from other city| true|Daejeon door-to-d...|        1|         -|          -|        low|
+|   null|            Seoul|Yeongdeungpo-gu| true|Yeongdeungpo Lear...|        3| 37.520846| 126.931278|        low|
+|   null|            Busan|    Haeundae-gu| true|Haeundae-gu Catho...|        6|  35.20599|   129.1256|        low|
+|   null|            Daegu|   Dalseong-gun| true|Second Mi-Ju Hosp...|      196| 35.857375| 128.466651|       high|
+|   null|            Daegu|from other city| true|       Itaewon Clubs|        2|         -|          -|        low|
+|   null|          Daejeon|         Seo-gu| true|         Orange Town|        7|36.3398739|127.3819744|        low|
+|   null|      Gyeonggi-do|              -| true|SMR Newly Planted...|       25|         -|          -|        low|
+|   null|      Gyeonggi-do|      Anyang-si| true|Anyang Gunpo Past...|       22| 37.381784|  126.93615|        low|
+|   null|      Gyeonggi-do|      Anyang-si| true|   Lord Glory Church|       17| 37.403722| 126.954939|        low|
+|   null|      Gyeonggi-do|       Suwon-si| true|Suwon Saeng Myeon...|       10|   37.2376|   127.0517|        low|
+|   null|      Gyeonggi-do|    Seongnam-si| true|Seongnam neighbor...|        5|         -|          -|        low|
+|   null|      Gyeonggi-do|              -|false|contact with patient|       63|         -|          -|       high|
+|   null|       Gangwon-do|              -|false|contact with patient|        0|         -|          -|        low|
+|   null|       Gangwon-do|              -|false|                 etc|        7|         -|          -|        low|
+|   null|Chungcheongbuk-do|              -|false|     overseas inflow|       13|         -|          -|        low|
+|   null|Chungcheongnam-do|from other city| true|Door-to-door sale...|       10|         -|          -|        low|
+|   null|Chungcheongnam-do|from other city| true|             Richway|        3|         -|          -|        low|
+|   null|     Jeollabuk-do|from other city| true|  Shincheonji Church|        1|         -|          -|        low|
++-------+-----------------+---------------+-----+--------------------+---------+----------+-----------+-----------+
+only showing top 20 rows
